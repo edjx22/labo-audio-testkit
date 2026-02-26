@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "labo-audio-testkit"
+message: "If you use this software, please cite it using the metadata below."
+type: software
+authors:
+  - family-names: "Contributors"
+    given-names: "labo-audio-testkit"
+repository-code: "https://github.com/your-org/labo-audio-testkit"
+license: "Apache-2.0"
+version: "0.1.0"
+date-released: "2026-02-26"
