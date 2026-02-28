@@ -29,6 +29,35 @@ def test_cli_analyze_writes_json(tmp_path: Path) -> None:
     assert data["sample_rate"] == 48000
 
 
+def test_cli_analyze_writes_markdown_report(tmp_path: Path) -> None:
+    output_path = tmp_path / "metrics.json"
+    report_path = tmp_path / "report.md"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "labo_audio_testkit",
+            "analyze",
+            "examples/assets/example.wav",
+            "-o",
+            str(output_path),
+            "--report",
+            "md",
+            "--report-out",
+            str(report_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert report_path.exists()
+    assert "Wrote report to" in result.stdout
+    assert "Sample rate" in report_path.read_text(encoding="utf-8")
+
+
 def test_module_help() -> None:
     result = subprocess.run(
         [sys.executable, "-m", "labo_audio_testkit", "--help"],

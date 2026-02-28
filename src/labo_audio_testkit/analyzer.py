@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import wave
+from collections.abc import Mapping
 from pathlib import Path
 from typing import TypedDict
 
@@ -47,3 +48,46 @@ def analyze_wav(path: str | Path) -> WavMetrics:
         "peak_dbfs": -3.0,
         "crest_factor_db": 17.0,
     }
+
+
+def write_markdown_report(
+    audio_path: str | Path,
+    metrics: Mapping[str, object],
+    output_path: str | Path,
+) -> Path:
+    """Write a Markdown report for an analyzed WAV file."""
+    report_path = Path(output_path)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+
+    audio_file = Path(audio_path)
+    content = _build_markdown_report(audio_file, metrics)
+    report_path.write_text(content, encoding="utf-8")
+    return report_path
+
+
+def _build_markdown_report(audio_path: Path, metrics: Mapping[str, object]) -> str:
+    filename = audio_path.name
+    sample_rate = metrics.get("sample_rate", "N/A")
+    channels = metrics.get("channels", "N/A")
+    duration_sec = metrics.get("duration_sec", "N/A")
+    lines = [
+        "# Audio Analysis Report",
+        "",
+        "## File Summary",
+        "",
+        f"- Filename: {filename}",
+        f"- Sample rate: {sample_rate}",
+        f"- Channels: {channels}",
+        f"- Duration (sec): {duration_sec}",
+        "",
+        "## Metrics",
+        "",
+        "| Metric | Value |",
+        "| --- | --- |",
+    ]
+
+    for key, value in metrics.items():
+        lines.append(f"| {key} | {value} |")
+
+    lines.append("")
+    return "\n".join(lines)

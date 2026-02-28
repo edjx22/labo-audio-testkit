@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .analyzer import analyze_wav
+from .analyzer import analyze_wav, write_markdown_report
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -26,6 +26,17 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Output metrics JSON path",
     )
+    analyze_parser.add_argument(
+        "--report",
+        choices=["md"],
+        help="Optional report format to generate",
+    )
+    analyze_parser.add_argument(
+        "--report-out",
+        type=Path,
+        default=Path("out/report.md"),
+        help="Output report path (default: out/report.md)",
+    )
 
     return parser
 
@@ -39,6 +50,9 @@ def main(argv: list[str] | None = None) -> int:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
         print(f"Wrote metrics to {args.output}")
+        if args.report == "md":
+            report_path = write_markdown_report(args.input_wav, metrics, args.report_out)
+            print(f"Wrote report to {report_path}")
         return 0
 
     parser.error("Unknown command")

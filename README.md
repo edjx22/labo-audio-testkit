@@ -18,16 +18,30 @@ cat out/metrics.json
 ```bash
 python -m labo_audio_testkit --help
 python -m labo_audio_testkit analyze examples/assets/example.wav -o out/metrics.json
+python -m labo_audio_testkit analyze examples/assets/example.wav -o out/metrics.json --report md --report-out out/report.md
 ```
 
 ## Python API 示例
 
 ```python
-from labo_audio_testkit import analyze_wav
+from labo_audio_testkit import analyze_wav, write_markdown_report
 
 metrics = analyze_wav("examples/assets/example.wav")
+write_markdown_report("examples/assets/example.wav", metrics, "out/report.md")
 print(metrics)
 ```
+
+## Generate report
+
+```bash
+python -m labo_audio_testkit analyze \
+  examples/assets/example.wav \
+  -o out/metrics.json \
+  --report md \
+  --report-out out/report.md
+```
+
+生成的 `out/report.md` 至少包含文件名、采样率、声道数、时长，以及 `metrics.json` 里的关键指标表格。
 
 ## Demo
 
