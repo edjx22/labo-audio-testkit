@@ -49,6 +49,14 @@ python -m labo_audio_testkit analyze \
 python examples/demo.py
 ```
 
+## Example Analysis Output
+
+Run:
+
+```bash
+python -m labo_audio_testkit analyze examples/assets/example.wav -o out/metrics.json --report md
+```
+
 ## 开发
 
 ```bash
