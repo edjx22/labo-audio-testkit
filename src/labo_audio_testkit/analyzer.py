@@ -7,6 +7,13 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import TypedDict
 
+import matplotlib
+import numpy as np
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+
 
 class WavMetrics(TypedDict):
     path: str
@@ -18,6 +25,39 @@ class WavMetrics(TypedDict):
     rms_dbfs: float
     peak_dbfs: float
     crest_factor_db: float
+
+
+def load_wav_samples(path: str | Path) -> tuple[np.ndarray, int]:
+    """Load WAV PCM data as normalized float samples."""
+    wav_path = Path(path)
+    if not wav_path.exists():
+        raise FileNotFoundError(f"WAV file not found: {wav_path}")
+
+    with wave.open(str(wav_path), "rb") as wav:
+        channels = wav.getnchannels()
+        sample_rate = wav.getframerate()
+        sample_width = wav.getsampwidth()
+        raw_frames = wav.readframes(wav.getnframes())
+
+    dtype_map: dict[int, np.dtype[np.generic]] = {
+        1: np.dtype(np.uint8),
+        2: np.dtype(np.int16),
+        4: np.dtype(np.int32),
+    }
+    if sample_width not in dtype_map:
+        raise ValueError(f"Unsupported sample width: {sample_width} bytes")
+
+    pcm = np.frombuffer(raw_frames, dtype=dtype_map[sample_width])
+    if channels > 1:
+        pcm = pcm.reshape(-1, channels).mean(axis=1)
+
+    if sample_width == 1:
+        samples = (pcm.astype(np.float64) - 128.0) / 128.0
+    else:
+        scale = float(2 ** (8 * sample_width - 1))
+        samples = pcm.astype(np.float64) / scale
+
+    return samples, sample_rate
 
 
 def analyze_wav(path: str | Path) -> WavMetrics:
@@ -48,6 +88,31 @@ def analyze_wav(path: str | Path) -> WavMetrics:
         "peak_dbfs": -3.0,
         "crest_factor_db": 17.0,
     }
+
+
+def write_spectrum_plot(path: str | Path, output_path: str | Path) -> Path:
+    """Compute a magnitude spectrum from a WAV file and save it as a PNG."""
+    samples, sample_rate = load_wav_samples(path)
+    if samples.size == 0:
+        raise ValueError("WAV file contains no audio samples")
+
+    frequencies = np.fft.rfftfreq(samples.size, d=1.0 / sample_rate)
+    spectrum = np.fft.rfft(samples)
+    magnitude = np.abs(spectrum)
+
+    plot_path = Path(output_path)
+    plot_path.parent.mkdir(parents=True, exist_ok=True)
+
+    figure, axis = plt.subplots(figsize=(10, 4))
+    axis.plot(frequencies, magnitude, linewidth=1.0)
+    axis.set_title(f"Magnitude Spectrum: {Path(path).name}")
+    axis.set_xlabel("Frequency (Hz)")
+    axis.set_ylabel("Magnitude")
+    axis.grid(True, alpha=0.3)
+    figure.tight_layout()
+    figure.savefig(plot_path, format="png")
+    plt.close(figure)
+    return plot_path
 
 
 def write_markdown_report(

@@ -58,6 +58,51 @@ def test_cli_analyze_writes_markdown_report(tmp_path: Path) -> None:
     assert "Sample rate" in report_path.read_text(encoding="utf-8")
 
 
+def test_cli_spectrum_runs_successfully(tmp_path: Path) -> None:
+    output_path = tmp_path / "spectrum.png"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "labo_audio_testkit",
+            "spectrum",
+            "examples/assets/example.wav",
+            "--out",
+            str(output_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Wrote spectrum to" in result.stdout
+
+
+def test_cli_spectrum_writes_output_file(tmp_path: Path) -> None:
+    output_path = tmp_path / "spectrum.png"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "labo_audio_testkit",
+            "spectrum",
+            "examples/assets/example.wav",
+            "--out",
+            str(output_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert output_path.exists()
+    assert output_path.stat().st_size > 0
+
+
 def test_module_help() -> None:
     result = subprocess.run(
         [sys.executable, "-m", "labo_audio_testkit", "--help"],
@@ -67,3 +112,4 @@ def test_module_help() -> None:
     )
     assert result.returncode == 0
     assert "analyze" in result.stdout
+    assert "spectrum" in result.stdout

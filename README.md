@@ -43,6 +43,18 @@ python -m labo_audio_testkit analyze \
 
 生成的 `out/report.md` 至少包含文件名、采样率、声道数、时长，以及 `metrics.json` 里的关键指标表格。
 
+## Spectrum Analyzer
+
+```bash
+python -m labo_audio_testkit spectrum example.wav --out spectrum.png
+```
+
+也可以直接对仓库内示例音频运行：
+
+```bash
+python -m labo_audio_testkit spectrum examples/assets/example.wav --out out/spectrum.png
+```
+
 ## Demo
 
 ```bash

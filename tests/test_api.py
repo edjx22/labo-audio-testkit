@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from labo_audio_testkit import analyze_wav, write_markdown_report
+from labo_audio_testkit import analyze_wav, write_markdown_report, write_spectrum_plot
 
 
 def test_analyze_wav_returns_expected_fields() -> None:
@@ -25,3 +25,14 @@ def test_write_markdown_report_contains_summary_and_metrics(tmp_path: Path) -> N
     assert "# Audio Analysis Report" in content
     assert "Sample rate" in content
     assert "| sample_rate | 48000 |" in content
+
+
+def test_write_spectrum_plot_creates_png(tmp_path: Path) -> None:
+    wav_path = Path("examples/assets/example.wav")
+    output_path = tmp_path / "spectrum.png"
+
+    written_path = write_spectrum_plot(wav_path, output_path)
+
+    assert written_path == output_path
+    assert output_path.exists()
+    assert output_path.stat().st_size > 0
